@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "taskone.proto";
+
+/**
+ * Task Management Protocol - Protocol Buffers Version
+ *
+ * The server currently uses JSON protocol. You need to design
+ * a Protobuf version that supports the same operations:
+ * - add: Add a new task
+ * - list: List tasks with filter
+ * - finish: Mark task as finished
+ * - quit: Disconnect from server
+ *
+ * Study the JSON protocol in the README.md, Performer.java and Client.java to understand
+ * what fields are needed for each request and response. You do not have to build the exact same things, some fields could be different
+ * but the general information should be the same.
+ */
+
+// ========== REQUEST MESSAGES ==========
+
+/**
+ * Main request message sent from client to server.
+ *
+ */
+message Request {
+  enum RequestType {
+    UNKNOWN = 0;
+    ADD = 1;
+    LIST = 2;
+    FINISH = 3;
+    QUIT = 4;
+
+  }
+  RequestType type = 1;
+  string description = 2;
+  string category = 3;
+  string filter = 4;
+  int32 id = 5;
+}
+
+// ========== RESPONSE MESSAGES ==========
+
+/**
+ * Main response message sent from server to client.
+ *
+ */
+message Response {
+  enum ResponseType {
+    UNKNOWN = 0;
+    SUCCESS = 1;
+    ERROR = 2;
+  }
+
+  ResponseType type = 1;
+  string message = 2;
+  TaskProto task = 3;
+  TaskList taskList = 4;
+
+}
+
+// ========== DATA MESSAGES ==========
+
+/**
+ * Represents a single task.
+ *
+ */
+message TaskProto {
+
+  int32 id = 1;
+  string description = 2;
+  string category = 3;
+  string assignee = 4;
+  bool finished = 5;
+
+}
+
+/**
+ * List of tasks (for LIST response).
+ */
+message TaskList {
+  repeated TaskProto tasks = 1;
+  int32 count = 2;
+}
