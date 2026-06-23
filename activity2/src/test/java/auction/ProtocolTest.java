@@ -150,7 +150,70 @@ public class ProtocolTest {
     // ADD YOUR TESTS BELOW (at least 3 more tests required)
     // ====================================================================
 
+    @Test
+    @Order(5)
+    public void testJoinAfterRegister() throws IOException
+    {
+        Response.parseDelimitedFrom(in);
 
+        sendRegister("JoinTester");
+        sendJoin();
+
+        Response response = Response.parseDelimitedFrom(in);
+
+        assertNotNull(response);
+        assertEquals(Response.ResponseType.GAME_JOINED, response.getType());
+        assertTrue(response.getOk());
+        assertTrue(response.hasNextItem(), "JOIN should include the first item");
+        assertTrue(response.hasPlayerStatus(), "JOIN should include player status");
+        assertEquals(150, response.getPlayerStatus().getGoldRemaining());
+    }
+
+    @Test
+    @Order(6)
+    public void testBidBelowReserveReturnsError() throws IOException
+    {
+        Response.parseDelimitedFrom(in);
+
+        sendRegister("BidTester");
+        sendJoin();
+
+        Response joined = Response.parseDelimitedFrom(in);
+        int itemId = joined.getNextItem().getId();
+
+        Request badBid = Request.newBuilder()
+            .setType(Request.RequestType.BID)
+            .setItemId(itemId)
+            .setBidAmount(1)
+            .build();
+        badBid.writeDelimitedTo(out);
+
+        Response response = Response.parseDelimitedFrom(in);
+
+        assertNotNull(response);
+        assertEquals(Response.ResponseType.ERROR, response.getType());
+        assertFalse(response.getOk());
+        assertTrue(response.getMessage().toLowerCase().contains("reserve"));
+    }
+
+    @Test
+    @Order(7)
+    public void testLeaderboardRequest() throws IOException
+    {
+        Response.parseDelimitedFrom(in);
+
+        Request leaderboardRequest = Request.newBuilder()
+            .setType(Request.RequestType.LEADERBOARD)
+            .build();
+        leaderboardRequest.writeDelimitedTo(out);
+
+        Response response = Response.parseDelimitedFrom(in);
+
+        assertNotNull(response);
+        assertEquals(Response.ResponseType.LEADERBOARD_RESPONSE, response.getType());
+        assertTrue(response.getOk());
+        assertTrue(response.hasLeaderboard());
+    }
 
     // Helper methods if you want to use them
 
